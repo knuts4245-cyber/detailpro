@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DetailPro">
+<title>DetailPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090d;--s1:#0e1018;--s2:#13161f;--s3:#1c2030;--s4:#252a3a;
+  --accent:#5b8def;--green:#1fd97a;--gd:rgba(31,217,122,.1);
+  --amber:#f5a623;--ad:rgba(245,166,35,.1);
+  --red:#f05252;--rd:rgba(240,82,82,.1);
+  --purple:#9b72f5;--pd:rgba(155,114,245,.1);
+  --tx:#e8e9f2;--t2:#6b7190;--t3:#353a52;
+  --sat:env(safe-area-inset-top,44px);--sab:env(safe-area-inset-bottom,20px);
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Outfit',sans-serif;color:var(--tx);font-size:15px;-webkit-font-smoothing:antialiased}
+.mono{font-family:'DM Mono',monospace}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100dvh}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+.pg{padding:12px 16px 110px}
+
+/* ── NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:100;
+background:rgba(8,9,13,.97);backdrop-filter:blur(24px);
+border-top:1px solid var(–s3);padding-bottom:var(–sab)}
+.nav-row{display:flex;justify-content:space-around;padding:7px 0 3px}
+.nv{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;
+border:none;background:none;color:var(–t3);font-size:8px;font-weight:700;
+text-transform:uppercase;letter-spacing:.6px;cursor:pointer;font-family:‘Outfit’;min-width:38px}
+.nv.on{color:var(–accent)}
+.nv-ico{width:32px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nv.on .nv-ico{background:rgba(91,141,239,.12)}
+
+/* ── TOPBAR ── */
+.tb{background:rgba(8,9,13,.95);backdrop-filter:blur(20px);
+padding-top:calc(var(–sat) + 10px);padding:calc(var(–sat) + 10px) 18px 0;
+position:sticky;top:0;z-index:50;border-bottom:1px solid var(–s3)}
+.tb-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:13px}
+.logo-wrap{display:flex;align-items:center;gap:9px}
+.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#5b8def,#7c5fe6);border-radius:10px;
+display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.logo-text{font-family:‘Syne’,sans-serif;font-size:19px;font-weight:800;letter-spacing:-.4px}
+.logo-text span{background:linear-gradient(90deg,#5b8def,#9b72f5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(–t3);margin-top:1px}
+.tb-btn{background:var(–accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;
+font-size:13px;font-weight:700;cursor:pointer;font-family:‘Outfit’;white-space:nowrap}
+.tb-btn:active{opacity:.8}
+
+/* ── PAGES ── */
+.page{display:none}.page.on{display:block}
+.sec{font-family:‘Syne’,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;
+letter-spacing:2px;color:var(–t3);margin:20px 0 9px;display:block}
+
+/* ── STAT GRID ── */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.sbox{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:14px;position:relative;overflow:hidden}
+.sbox::after{content:’’;position:absolute;width:50px;height:50px;border-radius:50%;
+filter:blur(22px);right:-6px;top:-6px;opacity:.18;pointer-events:none;background:var(–glow,transparent)}
+.sl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(–t3);margin-bottom:8px}
+.sn{font-family:‘DM Mono’;font-size:24px;font-weight:500;line-height:1}
+.sn.g{color:var(–green)}.sn.b{color:var(–accent)}.sn.a{color:var(–amber)}.sn.r{color:var(–red)}
+.ss{font-size:11px;color:var(–t3);margin-top:4px}
+
+/* ── CARDS ── */
+.card{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:15px;margin-bottom:9px}
+
+/* ── FORMS ── */
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(–t2);margin-bottom:6px}
+.fi{width:100%;background:var(–s1);border:1.5px solid var(–s3);border-radius:10px;
+padding:11px 13px;color:var(–tx);font-family:‘Outfit’;font-size:15px;outline:none;
+-webkit-appearance:none;appearance:none}
+.fi:focus{border-color:var(–accent)}
+.fi::placeholder{color:var(–t3)}
+select.fi option{background:var(–s1)}
+textarea.fi{min-height:68px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* ── BUTTONS ── */
+.btn{width:100%;background:var(–accent);color:#fff;border:none;border-radius:11px;
+padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:‘Outfit’;
+margin-bottom:9px;display:block;text-align:center}
+.btn:active{opacity:.82}
+.btn.green{background:var(–green);color:#05160a}
+.btn.line{background:transparent;color:var(–t2);border:1.5px solid var(–s4)}
+.tag{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:8px;
+padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:‘Outfit’;white-space:nowrap}
+.tag:active{opacity:.75}
+.tag.b{background:rgba(91,141,239,.12);color:var(–accent)}
+.tag.g{background:var(–gd);color:var(–green)}
+.tag.a{background:var(–ad);color:var(–amber)}
+.tag.r{background:var(–rd);color:var(–red)}
+.tag.p{background:var(–pd);color:var(–purple)}
+.tag.n{background:var(–s3);color:var(–t2)}
+.btn-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+
+/* ── SHEETS ── */
+.ov{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);display:none;align-items:flex-end}
+.ov.on{display:flex}
+.sheet{background:var(–s2);border:1px solid var(–s4);border-radius:22px 22px 0 0;
+width:100%;max-height:92dvh;overflow-y:auto;padding-bottom:calc(var(–sab) + 14px)}
+.sheet::-webkit-scrollbar{display:none}
+.sh-drag{width:36px;height:4px;background:var(–s4);border-radius:2px;margin:12px auto 0}
+.sh-hdr{display:flex;align-items:flex-start;justify-content:space-between;
+padding:15px 20px 13px;border-bottom:1px solid var(–s3);
+position:sticky;top:0;background:var(–s2);z-index:5}
+.sh-title{font-family:‘Syne’,sans-serif;font-size:20px;font-weight:800;color:#fff}
+.sh-sub{font-size:13px;color:var(–t2);margin-top:2px}
+.sh-x{width:30px;height:30px;flex-shrink:0;margin-left:10px;background:var(–s3);border:none;
+border-radius:50%;color:var(–t2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sh-body{padding:16px 20px 0}
+
+/* ── JOB CARDS ── */
+.jcard{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:14px;margin-bottom:8px}
+.jcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.jname{font-family:‘Syne’,sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.jmeta{font-size:12px;color:var(–t2)}
+.jprice{font-family:‘DM Mono’;font-size:17px;color:var(–green)}
+.badge{display:inline-flex;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-top:3px}
+.bd-g{background:var(–gd);color:var(–green)}.bd-a{background:var(–ad);color:var(–amber)}
+
+/* ── CLIENT CARDS ── */
+.ccard{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:14px;margin-bottom:8px;cursor:pointer}
+.ccard:active{border-color:var(–accent)}
+.ccard-top{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.cav{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5b8def,#9b72f5);
+color:#fff;font-family:‘Syne’,sans-serif;font-size:16px;font-weight:800;
+display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cname{font-family:‘Syne’,sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.cmeta{font-size:12px;color:var(–t2)}
+.cstats{display:flex;gap:14px;padding-top:9px;border-top:1px solid var(–s3)}
+.cstat{font-size:12px;color:var(–t2)}.cstat strong{color:var(–tx);font-weight:700}
+
+/* ── APPT CARDS ── */
+.acard{background:var(–s2);border:1px solid var(–s3);border-left:3px solid var(–accent);border-radius:var(–r);padding:15px;margin-bottom:8px}
+.acard.today{border-left-color:var(–amber)}
+.adate{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(–accent);margin-bottom:3px}
+.acard.today .adate{color:var(–amber)}
+.atime{font-family:‘DM Mono’;font-size:20px;color:#fff;margin-bottom:11px}
+.arow{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
+.aico{font-size:12px;flex-shrink:0;margin-top:1px;width:15px;text-align:center}
+.atxt{font-size:13px;color:var(–tx);font-weight:500;line-height:1.4}
+.maps-link{color:var(–accent);font-size:11px;font-weight:700;cursor:pointer;border:none;background:none;font-family:‘Outfit’;display:block;margin-top:2px;padding:0}
+.rec-badge{display:inline-flex;align-items:center;gap:4px;background:var(–pd);color:var(–purple);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;margin:3px 0 6px}
+
+/* ── PRODUCTS ── */
+.pscroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:11px}
+.pscroll::-webkit-scrollbar{display:none}
+.ppill{background:var(–s2);border:1.5px solid var(–s3);border-radius:20px;padding:6px 13px;
+font-size:12px;font-weight:600;color:var(–t2);cursor:pointer;white-space:nowrap;font-family:‘Outfit’}
+.ppill.on{background:var(–accent);color:#fff;border-color:var(–accent)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}
+.pcard{background:var(–s2);border:1px solid var(–s3);border-radius:12px;padding:12px}
+.pbrand{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(–accent);margin-bottom:3px}
+.pname{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.3}
+.pdesc{font-size:11px;color:var(–t2);margin-bottom:8px;line-height:1.4}
+.pfoot{display:flex;justify-content:space-between;align-items:center}
+.pprice-lbl{font-family:‘DM Mono’;font-size:12px;color:var(–green)}
+.padd{background:var(–accent);color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:‘Outfit’}
+.iitem{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(–s3)}
+.iitem:last-child{border:none}
+.pbar{height:2px;background:var(–s3);border-radius:2px;overflow:hidden;margin-top:4px;width:64px}
+.pbfill{height:100%;border-radius:2px}
+
+/* ── CHART ── */
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:72px}
+.ccol{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.cbar{width:100%;border-radius:4px 4px 0 0;min-height:3px}
+.clbl{font-size:9px;color:var(–t3);font-weight:600}
+
+/* ── QUOTE ── */
+.qsvc{display:flex;align-items:center;justify-content:space-between;background:var(–s1);
+border:1.5px solid var(–s3);border-radius:10px;padding:12px 13px;cursor:pointer;margin-bottom:6px}
+.qsvc.on{border-color:var(–green);background:var(–gd)}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px}
+.pay-opt{background:var(–s1);border:1.5px solid var(–s3);border-radius:11px;padding:11px;
+cursor:pointer;text-align:center;font-family:‘Outfit’;width:100%}
+.pay-opt.sel{border-color:var(–green);background:var(–gd)}
+.pay-opt-ico{font-size:19px;display:block;margin-bottom:4px}
+.pay-opt-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.pay-opt-sub{font-size:10px;color:var(–t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── PHOTOS ── */
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.photo-slot{aspect-ratio:1;border-radius:11px;overflow:hidden;border:1.5px dashed var(–s4);
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;background:var(–s1);position:relative}
+.photo-slot.has{border-style:solid;border-color:var(–s3)}
+.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-slot-lbl{font-size:11px;font-weight:600;color:var(–t3);z-index:1}
+.photo-slot-ico{font-size:20px;z-index:1}
+.photo-tag{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:20px;z-index:2}
+
+/* ── TEMPLATES ── */
+.tmpl{background:var(–s2);border:1px solid var(–s3);border-radius:12px;padding:14px;margin-bottom:8px}
+.tmpl-name{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.tmpl-text{font-size:12px;color:var(–t2);line-height:1.65;margin-bottom:10px}
+.tmpl-btns{display:flex;gap:7px}
+
+/* ── TIPS ── */
+.tip-cat{font-family:‘Syne’,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;
+letter-spacing:2px;color:var(–accent);margin:18px 0 8px;display:block}
+.tip-card{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:14px;margin-bottom:7px}
+.tip-q{font-size:13px;font-weight:700;color:#fff;margin-bottom:0;cursor:pointer;
+display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tip-chevron{font-size:12px;color:var(–t3);flex-shrink:0;transition:transform .2s}
+.tip-a{font-size:13px;color:var(–t2);line-height:1.7;display:none;margin-top:10px;
+padding-top:10px;border-top:1px solid var(–s3)}
+.tip-card.open .tip-a{display:block}
+.tip-card.open .tip-chevron{transform:rotate(180deg)}
+
+/* ── MISC ── */
+.tip-box{background:rgba(91,141,239,.08);border:1px solid rgba(91,141,239,.14);border-radius:9px;padding:10px 12px;font-size:12px;color:var(–t2);margin-bottom:11px;line-height:1.5}
+.tip-box strong{color:var(–accent)}
+.warn-box{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.18);border-radius:9px;padding:10px 12px;font-size:12px;color:var(–amber);margin-bottom:11px;line-height:1.5}
+.okbox{background:var(–gd);border:1px solid rgba(31,217,122,.18);border-radius:9px;padding:12px;display:none;margin-top:9px}
+.okbox-t{font-size:13px;font-weight:700;color:var(–green);margin-bottom:2px}
+.okbox-s{font-size:11px;color:rgba(31,217,122,.65)}
+.sopt{display:flex;align-items:center;gap:11px;background:var(–s1);border:1.5px solid var(–s3);
+border-radius:11px;padding:13px;cursor:pointer;margin-bottom:8px;font-family:‘Outfit’;text-align:left;width:100%}
+.sopt.sel{border-color:var(–accent);background:rgba(91,141,239,.08)}
+.sopt-em{font-size:22px;flex-shrink:0}
+.sopt-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px}
+.sopt-hint{font-size:11px;color:var(–t2)}
+.msg-prev{background:var(–s1);border:1px solid var(–s3);border-radius:9px;padding:13px;
+font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(–tx);max-height:150px;overflow-y:auto;margin:9px 0}
+.empty{text-align:center;padding:48px 20px}
+.empty-ico{font-size:40px;margin-bottom:12px;display:block}
+.empty-t{font-family:‘Syne’,sans-serif;font-size:15px;font-weight:700;color:var(–tx);margin-bottom:4px}
+.empty-s{font-size:13px;color:var(–t2)}
+.fb{display:flex;align-items:center;justify-content:space-between}
+.timer-big{font-family:‘DM Mono’;font-size:54px;font-weight:500;color:#fff;text-align:center;
+letter-spacing:3px;padding:20px 0 8px;line-height:1}
+.timer-lbl{text-align:center;font-size:13px;color:var(–t2);margin-bottom:16px}
+.store-hero{background:linear-gradient(135deg,var(–s3),var(–s4));border:1px solid var(–s4);
+border-radius:var(–r);padding:18px;margin-bottom:13px}
+.svc-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(–s3)}
+.svc-row:last-child{border:none}
+
+/* ── HOME QUICK ACTIONS ── */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.qa-btn{background:var(–s2);border:1px solid var(–s3);border-radius:var(–r);padding:14px;
+cursor:pointer;text-align:left;font-family:‘Outfit’;width:100%}
+.qa-btn:active{border-color:var(–accent)}
+.qa-ico{font-size:22px;margin-bottom:7px;display:block}
+.qa-title{font-family:‘Syne’,sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.qa-sub{font-size:11px;color:var(–t3);line-height:1.3}
+
+/* ── ACTIVE BANNER ── */
+.abanner{display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.18);
+border-radius:12px;padding:12px 14px;margin-bottom:11px;align-items:center;
+justify-content:space-between;flex-wrap:wrap;gap:8px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.blink-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(–amber);
+margin-right:7px;animation:blink 1.4s infinite}
+
+/* ── NOTIFICATIONS ── */
+.nstack{position:fixed;top:calc(var(–sat) + 56px);right:13px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.notif{background:var(–s2);border:1px solid var(–s3);border-left:3px solid var(–green);
+border-radius:10px;padding:10px 13px;font-size:13px;font-weight:600;pointer-events:auto;
+min-width:180px;animation:slideIn .22s ease}
+.notif.err{border-left-color:var(–red)}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+@media print{body>*{display:none!important}#printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:24px}}
+@media(max-width:375px){.sn{font-size:20px}.timer-big{font-size:46px}}
+</style>
+
+</head>
+<body>
+<div id="printArea" style="display:none"></div>
+<div class="nstack" id="nstack"></div>
+
+<!-- NEW JOB -->
+
+<div class="ov" id="ovJob"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">New Job</div><div class="sh-sub">Start tracking a detailing job</div></div><button class="sh-x" onclick="closeSheet('ovJob')">✕</button></div>
+<div class="sh-body">
+  <div class="fg"><label class="fl">Customer Name</label><input class="fi" id="nj_c" placeholder="e.g. John Smith" type="text"></div>
+  <div class="fg"><label class="fl">Vehicle</label><input class="fi" id="nj_v" placeholder="e.g. 2022 Toyota Camry" type="text"></div>
+  <div class="g2">
+    <div class="fg"><label class="fl">Service</label><select class="fi" id="nj_s"><option>Exterior Detail</option><option>Interior Detail</option><option>Full Detail</option><option>Paint Correction</option><option>Engine Bay</option><option>Ceramic Coating</option><option>Custom</option></select></div>
+    <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="nj_p" placeholder="100" type="number" inputmode="decimal"></div>
+  </div>
+  <div class="fg"><label class="fl">Address</label><input class="fi" id="nj_a" placeholder="Location" type="text"></div>
+  <div class="fg"><label class="fl">Notes</label><textarea class="fi" id="nj_n" placeholder="Special requests, car condition..."></textarea></div>
+  <button class="btn" onclick="createJob()">Start Job &amp; Timer</button>
+</div></div></div>
+
+<!-- SCHEDULE -->
+
+<div class="ov" id="ovSched"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Book Appointment</div><div class="sh-sub">Schedule &amp; send confirmation</div></div><button class="sh-x" onclick="closeSheet('ovSched')">✕</button></div>
+<div class="sh-body">
+  <div class="fg"><label class="fl">Customer Name</label><input class="fi" id="sc_c" placeholder="e.g. John Smith" type="text"></div>
+  <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="sc_ph" placeholder="5551234567" type="tel" inputmode="numeric"></div>
+  <div class="fg"><label class="fl">Vehicle</label><input class="fi" id="sc_v" placeholder="e.g. 2022 Toyota Camry" type="text"></div>
+  <div class="fg"><label class="fl">Service</label><select class="fi" id="sc_s"><option>Exterior Detail</option><option>Interior Detail</option><option>Full Detail</option><option>Paint Correction</option><option>Engine Bay</option><option>Ceramic Coating</option><option>Custom</option></select></div>
+  <div class="g2"><div class="fg"><label class="fl">Date</label><input class="fi" id="sc_d" type="date"></div><div class="fg"><label class="fl">Time</label><input class="fi" id="sc_t" type="time"></div></div>
+  <div class="g2"><div class="fg"><label class="fl">Price ($)</label><input class="fi" id="sc_p" placeholder="100" type="number" inputmode="decimal"></div><div class="fg"><label class="fl">Address</label><input class="fi" id="sc_a" placeholder="Location" type="text"></div></div>
+  <div class="fg"><label class="fl">Recurring</label><select class="fi" id="sc_rec"><option value="">One-time only</option><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every month</option></select></div>
+  <button class="btn" onclick="bookAppt()">Book Appointment</button>
+</div></div></div>
+
+<!-- SMS -->
+
+<div class="ov" id="ovSMS"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Send Message</div><div id="smsTo" class="sh-sub"></div></div><button class="sh-x" onclick="closeSheet('ovSMS')">✕</button></div>
+<div class="sh-body">
+  <div id="smsOpts"></div>
+  <div id="smsPrev" style="display:none">
+    <div class="tip-box"><strong>How it works:</strong> Copies your message then opens iMessage  --  paste and send.</div>
+    <div class="msg-prev" id="smsTxt"></div>
+    <button class="btn" onclick="doSend()">Copy &amp; Open iMessage</button>
+    <button class="btn line" onclick="doCopy()">Copy Only</button>
+    <div class="okbox" id="smsOk"><div class="okbox-t">Copied!</div><div class="okbox-s" id="smsOkS"></div></div>
+  </div>
+</div></div></div>
+
+<!-- ADD PRODUCT -->
+
+<div class="ov" id="ovProd"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Add Product</div><div class="sh-sub">Track cost per job</div></div><button class="sh-x" onclick="closeSheet('ovProd')">✕</button></div>
+<div class="sh-body">
+  <div class="fg"><label class="fl">Product Name</label><input class="fi" id="ap_n" placeholder="e.g. Meguiar's Gold Class" type="text"></div>
+  <div class="g2"><div class="fg"><label class="fl">Cost ($)</label><input class="fi" id="ap_c" placeholder="24.99" type="number" step="0.01" inputmode="decimal"></div><div class="fg"><label class="fl">Size (oz)</label><input class="fi" id="ap_s" placeholder="16" type="number" inputmode="decimal"></div></div>
+  <div class="g2"><div class="fg"><label class="fl">Stock Qty</label><input class="fi" id="ap_q" placeholder="3" type="number" inputmode="decimal"></div><div class="fg"><label class="fl">oz Per Job</label><input class="fi" id="ap_j" placeholder="2" type="number" step="0.5" inputmode="decimal"></div></div>
+  <div class="fg"><label class="fl">Category</label><select class="fi" id="ap_cat"><option>Shampoo</option><option>Polish</option><option>Wax</option><option>Interior</option><option>Tires</option><option>Glass</option><option>Tools</option><option>Other</option></select></div>
+  <button class="btn" onclick="saveProduct()">Add to Inventory</button>
+</div></div></div>
+
+<!-- INVOICE -->
+
+<div class="ov" id="ovInv"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Invoice</div><div class="sh-sub">Share with your client</div></div><button class="sh-x" onclick="closeSheet('ovInv')">✕</button></div>
+<div class="sh-body">
+  <div id="invBody" style="margin-bottom:13px"></div>
+  <button class="btn" onclick="doShare()">Share as Image</button>
+  <button class="btn line" onclick="doPrint()">Print / Save PDF</button>
+  <div id="inv-loading" style="display:none;text-align:center;padding:13px;color:var(--t2);font-size:13px">Generating…</div>
+  <div class="okbox" id="invOk"><div class="okbox-t" id="invOkT">Done!</div><div class="okbox-s" id="invOkS"></div></div>
+</div></div></div>
+
+<!-- ADD CLIENT -->
+
+<div class="ov" id="ovAddClient"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Add Client</div><div class="sh-sub">Save to your CRM</div></div><button class="sh-x" onclick="closeSheet('ovAddClient')">✕</button></div>
+<div class="sh-body">
+  <div class="fg"><label class="fl">Full Name</label><input class="fi" id="cl_n" placeholder="e.g. John Smith" type="text"></div>
+  <div class="fg"><label class="fl">Phone Number</label><input class="fi" id="cl_ph" placeholder="5551234567" type="tel" inputmode="numeric"></div>
+  <div class="fg"><label class="fl">Email (optional)</label><input class="fi" id="cl_e" placeholder="john@email.com" type="email"></div>
+  <div class="fg"><label class="fl">Vehicle</label><input class="fi" id="cl_v" placeholder="e.g. 2022 Toyota Camry" type="text"></div>
+  <div class="fg"><label class="fl">Notes</label><textarea class="fi" id="cl_notes" placeholder="Preferences, special requests..."></textarea></div>
+  <button class="btn" onclick="saveClient()">Save Client</button>
+</div></div></div>
+
+<!-- CLIENT DETAIL -->
+
+<div class="ov" id="ovClientD"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div id="cd-title" class="sh-title"></div></div><button class="sh-x" onclick="closeSheet('ovClientD')">✕</button></div>
+<div class="sh-body" id="cd-body"></div>
+</div></div>
+
+<!-- QUOTE -->
+
+<div class="ov" id="ovQuote"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Quote Builder</div><div class="sh-sub">Build estimate + payment link</div></div><button class="sh-x" onclick="closeSheet('ovQuote')">✕</button></div>
+<div class="sh-body">
+  <div class="g2">
+    <div class="fg"><label class="fl">Customer</label><input class="fi" id="q_c" placeholder="Name" type="text"></div>
+    <div class="fg"><label class="fl">Vehicle</label><input class="fi" id="q_v" placeholder="Make/Model" type="text"></div>
+  </div>
+  <div class="sec">Services</div><div id="q-svcs"></div>
+  <div class="sec">Add-ons</div><div id="q-addons"></div>
+  <div id="q-sum" style="display:none">
+    <div class="sec">Summary</div>
+    <div class="card" style="padding:12px">
+      <div id="q-items"></div>
+      <div style="background:var(--s1);border-radius:10px;padding:13px;margin-top:9px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t2)">Total</span>
+        <span class="mono" style="font-size:28px;color:#fff" id="q-total">$0</span>
+      </div>
+    </div>
+    <div class="sec">Payment Method</div>
+    <div class="pay-grid" id="pay-opts-grid"></div>
+    <div id="pay-handle-wrap" style="display:none">
+      <div class="fg"><label class="fl" id="pay-handle-lbl">Your handle</label><input class="fi" id="pay-handle" placeholder=""></div>
+    </div>
+    <button class="btn green" onclick="sendQuote()">Send Quote + Payment Link</button>
+    <button class="btn line" onclick="closeSheet('ovQuote')">Close</button>
+  </div>
+</div></div></div>
+
+<!-- PHOTOS -->
+
+<div class="ov" id="ovPhotos"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Job Photos</div><div id="photo-lbl" class="sh-sub"></div></div><button class="sh-x" onclick="closeSheet('ovPhotos')">✕</button></div>
+<div class="sh-body">
+  <div class="sec">Before</div><div class="photo-grid" id="photo-before"></div>
+  <div class="sec" style="margin-top:13px">After</div><div class="photo-grid" id="photo-after"></div>
+  <input type="file" id="photo-file" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+</div></div></div>
+
+<!-- TEMPLATES -->
+
+<div class="ov" id="ovTmpls"><div class="sheet">
+<div class="sh-drag"></div>
+<div class="sh-hdr"><div><div class="sh-title">Templates</div><div class="sh-sub">Professional texts ready to send</div></div><button class="sh-x" onclick="closeSheet('ovTmpls')">✕</button></div>
+<div class="sh-body" id="tmpls-body"></div>
+</div></div>
+
+<!-- APP -->
+
+<div id="app">
+<div class="scroll" id="mainScroll">
+
+<!-- HOME -->
+
+<div class="page on" id="pg-home">
+<div class="tb"><div class="tb-row">
+  <div class="logo-wrap"><div class="logo-mark">🚗</div><div><div class="logo-text">Detail<span>Pro</span></div><div class="logo-sub">Dashboard</div></div></div>
+  <button class="tb-btn" onclick="openSheet('ovJob')">+ New Job</button>
+</div></div>
+<div class="pg">
+  <div class="abanner" id="abanner">
+    <div style="display:flex;align-items:center"><span class="blink-dot"></span><strong id="bn-name"></strong>&nbsp;<span id="bn-svc" style="font-size:12px;color:var(--t2)"></span></div>
+    <div style="display:flex;align-items:center;gap:9px"><span id="bn-time" class="mono" style="font-size:17px;color:var(--amber)"></span><button onclick="endJob()" class="tag r">End</button></div>
+  </div>
+  <div class="sg">
+    <div class="sbox" style="--glow:var(--green)"><div class="sl">Today</div><div class="sn g" id="s-today">$0</div><div class="ss" id="s-todayj">0 jobs</div></div>
+    <div class="sbox" style="--glow:var(--accent)"><div class="sl">This Month</div><div class="sn b" id="s-month">$0</div><div class="ss" id="s-monthj">0 total</div></div>
+  </div>
+  <div class="sg">
+    <div class="sbox" style="--glow:var(--amber)"><div class="sl">Avg Time</div><div class="sn a" id="s-time">0:00</div><div class="ss">per job</div></div>
+    <div class="sbox" style="--glow:var(--red)"><div class="sl">Prod. Cost</div><div class="sn r" id="s-cost">$0</div><div class="ss">per job</div></div>
+  </div>
+  <div class="sec">Weekly Revenue</div>
+  <div class="card"><div class="chart-wrap" id="home-chart"></div></div>
+  <div class="sec">Quick Actions</div>
+  <div class="qa-grid">
+    <button class="qa-btn" onclick="initQuote();openSheet('ovQuote')"><span class="qa-ico">💰</span><div class="qa-title">Quote + Pay</div><div class="qa-sub">Estimate &amp; get paid instantly</div></button>
+    <button class="qa-btn" onclick="buildTmpls();openSheet('ovTmpls')"><span class="qa-ico">💬</span><div class="qa-title">Templates</div><div class="qa-sub">Quick professional texts</div></button>
+    <button class="qa-btn" onclick="openSheet('ovSched')"><span class="qa-ico">📅</span><div class="qa-title">Book Client</div><div class="qa-sub">Schedule + confirmation</div></button>
+    <button class="qa-btn" onclick="goPage('tips',document.querySelectorAll('.nv')[6])"><span class="qa-ico">💡</span><div class="qa-title">Pro Tips</div><div class="qa-sub">Techniques &amp; pricing advice</div></button>
+  </div>
+  <div class="sec">Recent Jobs</div><div id="home-recent"></div>
+  <div class="sec">Low Stock</div><div id="home-stock"></div>
+</div></div>
+
+<!-- CLIENTS -->
+
+<div class="page" id="pg-clients">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Clients</div><div class="logo-sub">CRM Database</div></div>
+  <button class="tb-btn" onclick="openSheet('ovAddClient')">+ Add</button>
+</div></div>
+<div class="pg">
+  <div style="margin-bottom:11px"><input class="fi" id="cl-search" placeholder="Search name, vehicle, phone…" oninput="renderClients()" type="text"></div>
+  <div id="clients-list"></div>
+</div></div>
+
+<!-- SCHEDULE -->
+
+<div class="page" id="pg-schedule">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Schedule</div><div class="logo-sub">Appointments</div></div>
+  <button class="tb-btn" onclick="openSheet('ovSched')">+ Book</button>
+</div></div>
+<div class="pg"><div id="appt-list"></div></div></div>
+
+<!-- JOBS -->
+
+<div class="page" id="pg-jobs">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Jobs</div><div class="logo-sub">Timer &amp; History</div></div>
+  <button class="tb-btn" onclick="openSheet('ovJob')">+ Job</button>
+</div></div>
+<div class="pg">
+  <div class="card" style="text-align:center;padding:18px 14px">
+    <div class="timer-big" id="timer-disp">00:00:00</div>
+    <div class="timer-lbl" id="timer-lbl">No active job</div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
+      <button id="btn-start" onclick="startTimer()" class="tag b">▶ Start</button>
+      <button id="btn-pause" onclick="pauseTimer()" class="tag a" disabled>⏸ Pause</button>
+      <button onclick="resetTimer()" class="tag r">↺ Reset</button>
+    </div>
+  </div>
+  <div class="sec">All Jobs</div><div id="jobs-list"></div>
+</div></div>
+
+<!-- PRODUCTS -->
+
+<div class="page" id="pg-products">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Products</div><div class="logo-sub">Inventory &amp; Costs</div></div>
+  <button class="tb-btn" onclick="openSheet('ovProd')">+ Add</button>
+</div></div>
+<div class="pg">
+  <div class="sec">Browse Catalog</div>
+  <div class="pscroll" id="cat-pills"></div>
+  <div class="pgrid" id="cat-grid"></div>
+  <div class="sec">My Inventory <span id="inv-count" style="font-family:'DM Mono';font-size:11px;color:var(--accent);background:rgba(91,141,239,.12);padding:2px 7px;border-radius:20px;margin-left:4px">0</span></div>
+  <div class="card" id="inv-list"><div style="color:var(--t2);font-size:13px;text-align:center;padding:11px">Browse catalog above or tap + Add</div></div>
+  <div class="sec">Cost Per Detail</div>
+  <div class="card" id="cost-break"><div style="color:var(--t2);font-size:13px">Add products to see breakdown.</div></div>
+</div></div>
+
+<!-- EARNINGS -->
+
+<div class="page" id="pg-earnings">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Earnings</div><div class="logo-sub">Revenue &amp; Profit</div></div>
+</div></div>
+<div class="pg">
+  <div class="sg">
+    <div class="sbox" style="--glow:var(--green)"><div class="sl">Revenue</div><div class="sn g" id="e-rev">$0</div></div>
+    <div class="sbox" style="--glow:var(--red)"><div class="sl">Prod. Cost</div><div class="sn r" id="e-cost">$0</div></div>
+  </div>
+  <div class="sg">
+    <div class="sbox" style="--glow:var(--accent)"><div class="sl">Net Profit</div><div class="sn b" id="e-profit">$0</div></div>
+    <div class="sbox" style="--glow:var(--amber)"><div class="sl">Jobs Done</div><div class="sn a" id="e-jobs">0</div></div>
+  </div>
+  <div class="sec">Earnings Log</div><div id="earn-log"></div>
+</div></div>
+
+<!-- TIPS -->
+
+<div class="page" id="pg-tips">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Pro Tips</div><div class="logo-sub">Techniques &amp; Advice</div></div>
+</div></div>
+<div class="pg">
+  <div style="margin-bottom:13px"><input class="fi" id="tips-search" placeholder="Search tips…" oninput="filterTips()" type="text"></div>
+  <div id="tips-list"></div>
+</div></div>
+
+<!-- SETUP -->
+
+<div class="page" id="pg-store">
+<div class="tb"><div class="tb-row">
+  <div><div class="logo-text" style="font-size:19px">Setup</div><div class="logo-sub">Business Profile</div></div>
+</div></div>
+<div class="pg">
+  <div class="store-hero">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:2px">Business Profile</div>
+    <div style="font-size:12px;color:var(--t2)">Appears on invoices &amp; messages</div>
+  </div>
+  <div class="card">
+    <div class="fg"><label class="fl">Business Name</label><input class="fi" id="biz-n" placeholder="e.g. Mike's Detail Shop" type="text"></div>
+    <div class="fg"><label class="fl">Address</label><input class="fi" id="biz-a" placeholder="123 Main St, City, State" type="text"></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="biz-ph" placeholder="(555) 123-4567" type="tel"></div>
+      <div class="fg"><label class="fl">Hourly Rate ($)</label><input class="fi" id="biz-r" placeholder="75" type="number" inputmode="decimal"></div>
+    </div>
+    <div class="sec" style="margin-top:6px">Payment Handles</div>
+    <div class="tip-box">Save once  --  auto-filled when you build quotes!</div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Venmo</label><input class="fi" id="biz-venmo" placeholder="@handle"></div>
+      <div class="fg"><label class="fl">CashApp</label><input class="fi" id="biz-cashapp" placeholder="$cashtag"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Zelle</label><input class="fi" id="biz-zelle" placeholder="phone or email"></div>
+      <div class="fg"><label class="fl">PayPal</label><input class="fi" id="biz-paypal" placeholder="paypal.me/you"></div>
+    </div>
+    <div class="fg"><label class="fl">Card Link (Stripe)</label><input class="fi" id="biz-stripe" placeholder="https://buy.stripe.com/..."></div>
+    <div class="warn-box">To accept cards: sign up free at stripe.com → Payment Links → Create → copy the link above. Clients tap it and pay by card. Stripe charges ~2.9% + 30c per transaction.</div>
+    <button class="btn" onclick="saveStore()">Save Profile</button>
+  </div>
+  <div class="sec">Service Menu</div>
+  <div class="card" id="svc-menu"></div>
+</div></div>
+
+</div>
+
+<div class="nav"><div class="nav-row">
+  <button class="nv on" onclick="goPage('home',this)"><div class="nv-ico">📊</div>Home</button>
+  <button class="nv" onclick="goPage('clients',this)"><div class="nv-ico">👤</div>Clients</button>
+  <button class="nv" onclick="goPage('schedule',this)"><div class="nv-ico">📅</div>Schedule</button>
+  <button class="nv" onclick="goPage('jobs',this)"><div class="nv-ico">🚗</div>Jobs</button>
+  <button class="nv" onclick="goPage('products',this)"><div class="nv-ico">🧴</div>Products</button>
+  <button class="nv" onclick="goPage('earnings',this)"><div class="nv-ico">💰</div>Earnings</button>
+  <button class="nv" onclick="goPage('tips',this)"><div class="nv-ico">💡</div>Tips</button>
+  <button class="nv" onclick="goPage('store',this)"><div class="nv-ico">⚙️</div>Setup</button>
+</div></div>
+</div>
+<script>
+var D={jobs:[],products:[],appts:[],clients:[],store:{},photos:{}};
+var activeJob=null,timerSec=0,timerOn=false,timerInt=null;
+var curPhone='',curMsg='',curInvJob=null,photoTarget={};
+var quoteItems=[],payMethod='stripe';
+
+function load(){try{var d=localStorage.getItem(‘dp15’);if(d){var p=JSON.parse(d);D.jobs=p.jobs||[];D.products=p.products||[];D.appts=p.appts||[];D.clients=p.clients||[];D.store=p.store||{};D.photos=p.photos||{};}}catch(e){}}
+function save(){try{localStorage.setItem(‘dp15’,JSON.stringify(D));}catch(e){}}
+load();
+setTimeout(function(){try{renderHome();}catch(e){}try{renderStore();}catch(e){}try{renderCatalog();}catch(e){}try{renderInv();}catch(e){}try{renderTips();}catch(e){}},80);
+
+function goPage(id,el){
+document.querySelectorAll(’.page’).forEach(function(p){p.classList.remove(‘on’);});
+document.querySelectorAll(’.nv’).forEach(function(b){b.classList.remove(‘on’);});
+document.getElementById(‘pg-’+id).classList.add(‘on’);
+el.classList.add(‘on’);
+document.getElementById(‘mainScroll’).scrollTop=0;
+if(id===‘home’)renderHome();
+if(id===‘clients’)renderClients();
+if(id===‘schedule’)renderSchedule();
+if(id===‘jobs’)renderJobs();
+if(id===‘products’){renderCatalog();renderInv();}
+if(id===‘earnings’)renderEarnings();
+if(id===‘store’)renderStore();
+if(id===‘tips’)renderTips();
+}
+function openSheet(id){var o=document.getElementById(id);o.classList.add(‘on’);o.onclick=function(e){if(e.target===o)closeSheet(id);};}
+function closeSheet(id){document.getElementById(id).classList.remove(‘on’);}
+function notify(msg,type){var el=document.createElement(‘div’);el.className=‘notif’+(type===‘err’?’ err’:’’);el.textContent=msg;document.getElementById(‘nstack’).appendChild(el);setTimeout(function(){el.remove();},3000);}
+function cpCopy(t,cb){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){if(cb)cb();}).catch(function(){fbCopy(t);if(cb)cb();});}else{fbCopy(t);if(cb)cb();}}
+function fbCopy(t){var ta=document.createElement(‘textarea’);ta.value=t;ta.style.cssText=‘position:fixed;opacity:0;top:0;left:0;width:1px;height:1px’;document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand(‘copy’);}catch(e){}document.body.removeChild(ta);}
+function fmt(s){return String(Math.floor(s/3600)).padStart(2,‘0’)+’:’+String(Math.floor((s%3600)/60)).padStart(2,‘0’)+’:’+String(s%60).padStart(2,‘0’);}
+
+/* TIMER */
+function kickTimer(){clearInterval(timerInt);timerOn=true;timerInt=setInterval(function(){if(!timerOn)return;timerSec++;document.getElementById(‘timer-disp’).textContent=fmt(timerSec);var bt=document.getElementById(‘bn-time’);if(bt)bt.textContent=fmt(timerSec);},1000);}
+function startTimer(){if(!activeJob){notify(‘Start a job first!’,‘err’);return;}timerOn=true;document.getElementById(‘btn-start’).disabled=true;document.getElementById(‘btn-pause’).disabled=false;}
+function pauseTimer(){timerOn=!timerOn;document.getElementById(‘btn-pause’).textContent=timerOn?‘Pause’:‘Resume’;}
+function resetTimer(){timerSec=0;document.getElementById(‘timer-disp’).textContent=‘00:00:00’;}
+function stopTimer(){clearInterval(timerInt);timerOn=false;timerSec=0;document.getElementById(‘timer-disp’).textContent=‘00:00:00’;document.getElementById(‘timer-lbl’).textContent=‘No active job’;document.getElementById(‘btn-start’).disabled=false;document.getElementById(‘btn-pause’).disabled=true;document.getElementById(‘abanner’).style.display=‘none’;}
+function calcProdCost(){return D.products.reduce(function(s,p){return s+(p.cost/(parseFloat(p.size)||1))*(p.perJob||0);},0);}
+
+/* JOBS */
+function createJob(){
+var c=document.getElementById(‘nj_c’).value.trim(),v=document.getElementById(‘nj_v’).value.trim();
+if(!c){notify(‘Enter customer name’,‘err’);return;}
+if(!v){notify(‘Enter vehicle’,‘err’);return;}
+var job={id:Date.now(),customer:c,vehicle:v,service:document.getElementById(‘nj_s’).value,price:parseFloat(document.getElementById(‘nj_p’).value)||0,address:document.getElementById(‘nj_a’).value,notes:document.getElementById(‘nj_n’).value,start:Date.now(),duration:0,status:‘active’,date:new Date().toLocaleDateString(),prodCost:0};
+D.jobs.unshift(job);autoAddClient(c,v,document.getElementById(‘nj_a’).value);
+activeJob=job;save();closeSheet(‘ovJob’);timerSec=0;kickTimer();
+document.getElementById(‘timer-lbl’).textContent=c+’  –  ‘+v;
+document.getElementById(‘abanner’).style.display=‘flex’;
+document.getElementById(‘bn-name’).textContent=c;
+document.getElementById(‘bn-svc’).textContent=job.service;
+document.getElementById(‘btn-start’).disabled=true;
+document.getElementById(‘btn-pause’).disabled=false;
+renderHome();notify(‘Job started for ‘+c);
+[‘nj_c’,‘nj_v’,‘nj_p’,‘nj_a’,‘nj_n’].forEach(function(id){var el=document.getElementById(id);if(el)el.value=’’;});
+}
+function endJob(){if(!activeJob)return;var j=D.jobs.find(function(x){return x.id===activeJob.id;});if(j){j.duration=timerSec;j.status=‘complete’;j.prodCost=calcProdCost();}activeJob=null;stopTimer();save();renderHome();renderJobs();renderEarnings();notify(‘Job complete!’);}
+function renderJobs(){
+var el=document.getElementById(‘jobs-list’);
+if(!D.jobs.length){el.innerHTML=’<div class="empty"><span class="empty-ico">🚗</span><div class="empty-t">No jobs yet</div><div class="empty-s">Tap + Job to get started</div></div>’;return;}
+el.innerHTML=D.jobs.map(function(j){return’<div class="jcard"><div class="jcard-top"><div><div class="jname">’+j.customer+’</div><div class="jmeta">’+j.vehicle+’ · ‘+j.date+’</div></div><div style="text-align:right"><div class="jprice">$’+j.price.toFixed(0)+’</div><span class="badge bd-'+(j.status==='complete'?'g':'a')+'">’+j.status+’</span></div></div><div style="font-size:12px;color:var(--t2);margin-bottom:8px">’+j.service+(j.duration?’ · ‘+fmt(j.duration):’’)+’</div><div class="btn-row">’+(j.status===‘active’?’<button class="tag g" onclick="endJob()">End Job</button>’:’’)+’<button class="tag b" onclick="showInvoice('+j.id+')">Invoice</button><button class="tag p" onclick="openPhotos('+j.id+')">Photos</button></div></div>’;}).join(’’);
+}
+
+/* INVOICE */
+function invHTML(j,biz){return’<div style="background:#fff;border-radius:13px;overflow:hidden;font-family:Outfit,sans-serif"><div style="background:#141828;padding:24px 22px;display:flex;align-items:flex-start;justify-content:space-between"><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:32px;height:32px;background:linear-gradient(135deg,#5b8def,#7c5fe6);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px">🚗</div><div style="font-family:Syne,sans-serif;font-size:17px;font-weight:800;color:#fff">’+(biz.name||‘DetailPro’)+’</div></div>’+(biz.address?’<div style="font-size:11px;color:#94a3b8;margin-bottom:2px">’+biz.address+’</div>’:’’)+(biz.phone?’<div style="font-size:11px;color:#94a3b8">’+biz.phone+’</div>’:’’)+’</div><div style="text-align:right"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#5b8def;margin-bottom:4px">Invoice</div><div style="font-family:DM Mono,monospace;font-size:18px;color:#fff">INV-’+String(j.id).slice(-5)+’</div><div style="font-size:11px;color:#64748b;margin-top:2px">’+j.date+’</div></div></div><div style="padding:18px 22px;border-bottom:1px solid #f1f5f9"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#94a3b8;margin-bottom:4px">Billed To</div><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#0f172a;margin-bottom:2px">’+j.customer+’</div><div style="font-size:12px;color:#475569;margin-bottom:2px">’+j.vehicle+’</div>’+(j.address?’<div style="font-size:11px;color:#94a3b8">’+j.address+’</div>’:’’)+’</div><div style="padding:18px 22px;border-bottom:1px solid #f1f5f9"><div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:3px">’+j.service+’</div>’+(j.notes?’<div style="font-size:12px;color:#94a3b8">’+j.notes+’</div>’:’’)+(j.duration?’<div style="font-size:11px;color:#64748b;margin-top:3px">Time: ‘+fmt(j.duration)+’</div>’:’’)+’</div><div style="padding:16px 22px"><div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:12px 13px;border-radius:8px"><span style="font-size:13px;font-weight:700;color:#0f172a">Total Due</span><span style="font-family:DM Mono,monospace;font-size:20px;color:#0f172a">$’+j.price.toFixed(2)+’</span></div></div><div style="padding:14px 22px;text-align:center;font-size:12px;font-weight:600;color:#334155">Thank you for choosing ‘+(biz.name||‘DetailPro’)+’!</div></div>’;}
+function showInvoice(id){var j=D.jobs.find(function(x){return x.id===id;});if(!j)return;curInvJob=j;document.getElementById(‘invBody’).innerHTML=invHTML(j,D.store);document.getElementById(‘invOk’).style.display=‘none’;document.getElementById(‘inv-loading’).style.display=‘none’;openSheet(‘ovInv’);}
+function doPrint(){if(!curInvJob)return;var a=document.getElementById(‘printArea’);a.style.display=‘block’;a.innerHTML=’<style>body{margin:0;padding:24px;background:#fff}*{box-sizing:border-box}</style>’+invHTML(curInvJob,D.store);setTimeout(function(){window.print();setTimeout(function(){a.style.display=‘none’;a.innerHTML=’’;},800);},300);}
+function doShare(){if(!curInvJob)return;var ld=document.getElementById(‘inv-loading’),ok=document.getElementById(‘invOk’);ld.style.display=‘block’;ok.style.display=‘none’;var node=document.getElementById(‘invBody’);if(typeof html2canvas!==‘undefined’&&node&&node.firstChild){html2canvas(node.firstChild,{scale:2,useCORS:true,backgroundColor:’#fff’}).then(function(canvas){ld.style.display=‘none’;canvas.toBlob(function(blob){var fname=‘Invoice-’+String(curInvJob.id).slice(-5)+’.png’;var file=new File([blob],fname,{type:‘image/png’});if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:‘Invoice’}).then(function(){notify(‘Shared!’);}).catch(function(e){if(e.name!==‘AbortError’)downloadCanvas(canvas,fname);});}else{downloadCanvas(canvas,fname);};},‘image/png’,1);}).catch(function(){ld.style.display=‘none’;fallbackShareText();});}else{ld.style.display=‘none’;fallbackShareText();}}
+function downloadCanvas(c,f){var l=document.createElement(‘a’);l.download=f;l.href=c.toDataURL(‘image/png’,1);document.body.appendChild(l);l.click();document.body.removeChild(l);document.getElementById(‘invOk’).style.display=‘block’;document.getElementById(‘invOkT’).textContent=‘Downloaded!’;document.getElementById(‘invOkS’).textContent=‘Share via iMessage, email, or AirDrop.’;notify(‘Saved!’);}
+function fallbackShareText(){var j=curInvJob,biz=D.store;var txt=‘INVOICE INV-’+String(j.id).slice(-5)+’\n’+(biz.name||‘DetailPro’)+’\n\nBilled To: ‘+j.customer+’\n’+j.vehicle+’\nService: ‘+j.service+’\nTotal: $’+j.price.toFixed(2)+’\n\nThank you!’;if(navigator.share){navigator.share({title:‘Invoice’,text:txt}).catch(function(){cpCopy(txt,function(){document.getElementById(‘invOk’).style.display=‘block’;});});}else{cpCopy(txt,function(){document.getElementById(‘invOk’).style.display=‘block’;});}}
+
+/* PHOTOS */
+function openPhotos(jobId){var j=D.jobs.find(function(x){return x.id===jobId;});if(!j)return;document.getElementById(‘photo-lbl’).textContent=j.customer+’  –  ‘+j.vehicle;renderPhotoSlots(jobId);openSheet(‘ovPhotos’);}
+function renderPhotoSlots(jid){var ph=D.photos[jid]||{before:[null,null],after:[null,null]};[‘before’,‘after’].forEach(function(t){document.getElementById(‘photo-’+t).innerHTML=[0,1].map(function(i){var img=ph[t][i];return’<div class="photo-slot '+(img?'has':'')+'" onclick="pickPhoto('+jid+',\''+t+'\','+i+')">’+(img?’<img src="'+img+'"><div class="photo-tag">’+t+’ ‘+(i+1)+’</div>’:’<div class="photo-slot-ico">📷</div><div class="photo-slot-lbl">Add photo</div>’)+’</div>’;}).join(’’);});}
+function pickPhoto(jid,t,s){photoTarget={jobId:jid,type:t,slot:s};document.getElementById(‘photo-file’).click();}
+function handlePhoto(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){var jid=photoTarget.jobId,t=photoTarget.type,s=photoTarget.slot;if(!D.photos[jid])D.photos[jid]={before:[null,null],after:[null,null]};D.photos[jid][t][s]=ev.target.result;save();renderPhotoSlots(jid);notify(‘Photo saved!’);};reader.readAsDataURL(file);e.target.value=’’;}
+
+/* CLIENTS */
+function autoAddClient(name,vehicle,address){if(!D.clients.find(function(c){return c.name.toLowerCase()===name.toLowerCase();})){D.clients.push({id:Date.now(),name:name,phone:’’,email:’’,vehicle:vehicle,address:address,notes:’’,added:new Date().toLocaleDateString()});save();}}
+function saveClient(){var name=document.getElementById(‘cl_n’).value.trim();if(!name){notify(‘Enter a name’,‘err’);return;}if(D.clients.find(function(c){return c.name.toLowerCase()===name.toLowerCase();})){notify(‘Already exists’,‘err’);return;}D.clients.push({id:Date.now(),name:name,phone:document.getElementById(‘cl_ph’).value.replace(/[^0-9]/g,’’),email:document.getElementById(‘cl_e’).value,vehicle:document.getElementById(‘cl_v’).value,notes:document.getElementById(‘cl_notes’).value,added:new Date().toLocaleDateString()});save();closeSheet(‘ovAddClient’);renderClients();notify(name+’ added!’);[‘cl_n’,‘cl_ph’,‘cl_e’,‘cl_v’,‘cl_notes’].forEach(function(id){var el=document.getElementById(id);if(el)el.value=’’;}); }
+function deleteClient(id){D.clients=D.clients.filter(function(c){return c.id!==id;});save();renderClients();closeSheet(‘ovClientD’);}
+function openClient(id){
+var c=D.clients.find(function(x){return x.id===id;});if(!c)return;
+var jobs=D.jobs.filter(function(j){return j.customer.toLowerCase()===c.name.toLowerCase();});
+var spent=jobs.filter(function(j){return j.status===‘complete’;}).reduce(function(s,j){return s+j.price;},0);
+document.getElementById(‘cd-title’).textContent=c.name;
+document.getElementById(‘cd-body’).innerHTML=’<div style="display:flex;align-items:center;gap:12px;margin-bottom:15px"><div class="cav" style="width:48px;height:48px;font-size:19px">’+c.name[0]+’</div><div><div style="font-size:13px;color:var(--t2)">’+(c.phone||‘No phone’)+(c.email?’ · ‘+c.email:’’)+’</div>’+(c.vehicle?’<div style="font-size:12px;color:var(--t3);margin-top:2px">’+c.vehicle+’</div>’:’’)+’<div style="font-size:11px;color:var(--t3);margin-top:1px">Since ‘+(c.added||’—’)+’</div></div></div><div class="sg" style="margin-bottom:13px"><div class="sbox" style="padding:11px;text-align:center"><div class="sl">Jobs</div><div class="sn b" style="font-size:21px">’+jobs.length+’</div></div><div class="sbox" style="padding:11px;text-align:center"><div class="sl">Spent</div><div class="sn g" style="font-size:21px">$’+spent.toFixed(0)+’</div></div></div>’+(c.notes?’<div style="background:var(--s1);border-radius:9px;padding:10px;font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5">’+c.notes+’</div>’:’’)+’<div class="btn-row" style="margin-bottom:15px">’+(c.phone?’<button class="tag g" onclick="window.location.href=\'sms:'+c.phone+'\'">Text</button><button class="tag b" onclick="window.location.href=\'tel:'+c.phone+'\'">Call</button>’:’’)+’<button class="tag a" onclick="closeSheet(\'ovClientD\');prefillJob('+id+')">New Job</button><button class="tag r" onclick="deleteClient('+id+')">Delete</button></div><div class="sec" style="margin-top:0">Job History</div>’+(jobs.length?jobs.map(function(j){return’<div class="jcard" style="margin-bottom:7px"><div class="jcard-top"><div><div class="jname" style="font-size:13px">’+j.service+’</div><div class="jmeta">’+j.date+’</div></div><div style="text-align:right"><div class="jprice" style="font-size:14px">$’+j.price.toFixed(0)+’</div><span class="badge bd-'+(j.status==='complete'?'g':'a')+'">’+j.status+’</span></div></div></div>’;}).join(’’):’<div style="color:var(--t3);font-size:13px;padding-bottom:13px">No jobs yet</div>’);
+openSheet(‘ovClientD’);
+}
+function prefillJob(id){var c=D.clients.find(function(x){return x.id===id;});if(!c)return;document.getElementById(‘nj_c’).value=c.name;if(c.vehicle)document.getElementById(‘nj_v’).value=c.vehicle;if(c.address)document.getElementById(‘nj_a’).value=c.address;openSheet(‘ovJob’);}
+function renderClients(){
+var el=document.getElementById(‘clients-list’);
+var q=(document.getElementById(‘cl-search’)?document.getElementById(‘cl-search’).value:’’).toLowerCase();
+var f=D.clients.filter(function(c){return!q||c.name.toLowerCase().indexOf(q)>-1||(c.vehicle&&c.vehicle.toLowerCase().indexOf(q)>-1)||(c.phone&&c.phone.indexOf(q)>-1);});
+if(!f.length){el.innerHTML=’<div class="empty"><span class="empty-ico">👤</span><div class="empty-t">’+(q?‘No results’:‘No clients yet’)+’</div><div class="empty-s">’+(q?‘Try another search’:‘Add your first client’)+’</div></div>’;return;}
+el.innerHTML=f.map(function(c){var jobs=D.jobs.filter(function(j){return j.customer.toLowerCase()===c.name.toLowerCase();});var spent=jobs.filter(function(j){return j.status===‘complete’;}).reduce(function(s,j){return s+j.price;},0);return’<div class="ccard" onclick="openClient('+c.id+')"><div class="ccard-top"><div class="cav">’+c.name[0]+’</div><div><div class="cname">’+c.name+’</div><div class="cmeta">’+(c.phone||‘No phone’)+(c.vehicle?’ · ‘+c.vehicle:’’)+’</div></div></div><div class="cstats"><div class="cstat"><strong>’+jobs.length+’</strong> jobs</div><div class="cstat"><strong>$’+spent.toFixed(0)+’</strong> spent</div><div class="cstat">Since <strong>’+(c.added||’—’)+’</strong></div></div></div>’;}).join(’’);
+}
+
+/* SCHEDULE */
+function bookAppt(){
+var name=document.getElementById(‘sc_c’).value.trim(),phone=document.getElementById(‘sc_ph’).value.replace(/[^0-9]/g,’’);
+if(!name){notify(‘Enter customer name’,‘err’);return;}
+if(!phone){notify(‘Enter phone number’,‘err’);return;}
+var date=document.getElementById(‘sc_d’).value,time=document.getElementById(‘sc_t’).value;
+if(!date||!time){notify(‘Enter date & time’,‘err’);return;}
+var rec=document.getElementById(‘sc_rec’).value;
+var a={id:Date.now(),name:name,phone:phone,vehicle:document.getElementById(‘sc_v’).value,service:document.getElementById(‘sc_s’).value,date:date,time:time,price:parseFloat(document.getElementById(‘sc_p’).value)||0,address:document.getElementById(‘sc_a’).value,recurring:rec};
+D.appts.unshift(a);
+if(rec){var dm={weekly:7,biweekly:14,monthly:30};var base=new Date(date+‘T12:00’);for(var i=1;i<=3;i++){var nd=new Date(base);nd.setDate(nd.getDate()+dm[rec]*i);D.appts.unshift({id:Date.now()+i,name:name,phone:phone,vehicle:a.vehicle,service:a.service,date:nd.toISOString().split(‘T’)[0],time:time,price:a.price,address:a.address,recurring:rec});}}
+autoAddClient(name,document.getElementById(‘sc_v’).value,document.getElementById(‘sc_a’).value);
+save();closeSheet(‘ovSched’);renderSchedule();notify(‘Booked for ‘+name+(rec?’ (’+rec+’)’:’’)+’!’);
+setTimeout(function(){openSMS(a.id);},600);
+[‘sc_c’,‘sc_ph’,‘sc_v’,‘sc_p’,‘sc_a’].forEach(function(id){var el=document.getElementById(id);if(el)el.value=’’;});
+}
+function fmtDT(date,time){try{var d=new Date(date+‘T12:00’);var ds=d.toLocaleDateString(‘en-US’,{weekday:‘long’,month:‘long’,day:‘numeric’,year:‘numeric’});var ts=time?new Date(‘2000-01-01T’+time).toLocaleTimeString(‘en-US’,{hour:‘numeric’,minute:‘2-digit’}):’’;return ds+(ts?’ at ‘+ts:’’);}catch(e){return date+’ ‘+time;}}
+function getSMSMsgs(a){
+var biz=D.store.name||‘DetailPro’;var dt=fmtDT(a.date,a.time);var pr=a.price?’\nTotal: $’+a.price.toFixed(2):’’;
+return[
+{icon:‘✅’,title:‘Booking Confirmation’,hint:‘Right after booking’,color:‘var(–green)’,msg:‘Hi ‘+a.name+’! This is ‘+biz+’.\n\nYour appointment is confirmed!\n\nDate: ‘+dt+’\nService: ‘+a.service+’\nVehicle: ‘+(a.vehicle||‘Your vehicle’)+(a.address?’\nLocation: ‘+a.address:’’)+pr+’\n\nSee you then!’},
+{icon:‘⏰’,title:‘Day Before Reminder’,hint:‘Evening before’,color:‘var(–amber)’,msg:‘Hi ‘+a.name+’! Reminder from ‘+biz+’  –  your detail is TOMORROW!\n\nDate: ‘+dt+’\nService: ‘+a.service+(a.address?’\nLocation: ‘+a.address:’’)+’\n\nSee you soon!’},
+{icon:‘🚗’,title:‘On My Way’,hint:‘When heading over’,color:‘var(–accent)’,msg:‘Hi ‘+a.name+’! This is ‘+biz+’  –  on my way now. Be there shortly for your ‘+a.service+’.’},
+{icon:‘🎉’,title:‘Job Complete’,hint:‘After finishing’,color:‘var(–purple)’,msg:‘Hi ‘+a.name+’! Your car is all done!\n\nThanks for choosing ‘+biz+’. Your ‘+a.service+’ is complete.’+pr+’\n\nHope to see you again!’},
+];
+}
+function openSMS(id){var a=D.appts.find(function(x){return x.id===id;});if(!a)return;curPhone=a.phone;curMsg=’’;document.getElementById(‘smsTo’).textContent=‘To: ‘+a.name+’ · ‘+a.phone;document.getElementById(‘smsPrev’).style.display=‘none’;document.getElementById(‘smsOk’).style.display=‘none’;document.getElementById(‘smsOpts’).innerHTML=getSMSMsgs(a).map(function(m,i){return’<button class="sopt" id="sopt'+i+'" onclick="pickMsg('+a.id+','+i+')"><span class="sopt-em">’+m.icon+’</span><div style="flex:1;text-align:left"><div class="sopt-name" style="color:'+m.color+'">’+m.title+’</div><div class="sopt-hint">’+m.hint+’</div></div><span style="color:var(--t3);font-size:15px">›</span></button>’;}).join(’’);openSheet(‘ovSMS’);}
+function pickMsg(apptId,idx){var a=D.appts.find(function(x){return x.id===apptId;});if(!a)return;curMsg=getSMSMsgs(a)[idx].msg;curPhone=a.phone;document.getElementById(‘smsTxt’).textContent=curMsg;document.getElementById(‘smsPrev’).style.display=‘block’;document.getElementById(‘smsOk’).style.display=‘none’;document.querySelectorAll(’.sopt’).forEach(function(b,i){b.classList.toggle(‘sel’,i===idx);});setTimeout(function(){document.getElementById(‘smsPrev’).scrollIntoView({behavior:‘smooth’,block:‘nearest’});},100);}
+function doSend(){if(!curMsg){notify(‘Select a message first’,‘err’);return;}cpCopy(curMsg,function(){window.location.href=‘sms:’+curPhone;document.getElementById(‘smsOk’).style.display=‘block’;document.getElementById(‘smsOkS’).textContent=‘iMessage opening  –  paste and send!’;});}
+function doCopy(){if(!curMsg)return;cpCopy(curMsg,function(){document.getElementById(‘smsOk’).style.display=‘block’;document.getElementById(‘smsOkS’).textContent=‘Paste into Messages and send.’;notify(‘Copied!’);});}
+function deleteAppt(id){D.appts=D.appts.filter(function(a){return a.id!==id;});save();renderSchedule();}
+function addToCalendar(id){var a=D.appts.find(function(x){return x.id===id;});if(!a)return;var s=new Date(a.date+‘T’+a.time),e=new Date(s.getTime()+3*60*60*1000),f=function(d){return d.toISOString().replace(/[-:]/g,’’).split(’.’)[0]+‘Z’;};var ics=‘BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:’+a.id+’@dp\r\nDTSTAMP:’+f(new Date())+’\r\nDTSTART:’+f(s)+’\r\nDTEND:’+f(e)+’\r\nSUMMARY:’+a.name+’ - ‘+a.service+’\r\nLOCATION:’+(a.address||’’)+’\r\nEND:VEVENT\r\nEND:VCALENDAR’;var blob=new Blob([ics],{type:‘text/calendar’});var url=URL.createObjectURL(blob);var l=document.createElement(‘a’);l.href=url;l.download=‘detail.ics’;document.body.appendChild(l);l.click();document.body.removeChild(l);URL.revokeObjectURL(url);notify(‘Added to Calendar!’);}
+function openMaps(addr){if(!addr)return;var enc=encodeURIComponent(addr);if(/iPhone|iPad|iPod/i.test(navigator.userAgent))window.location.href=‘maps://?daddr=’+enc+’&dirflg=d’;else window.open(‘https://maps.apple.com/?daddr=’+enc,’_blank’);}
+function startFromAppt(id){var a=D.appts.find(function(x){return x.id===id;});if(!a)return;document.getElementById(‘nj_c’).value=a.name||’’;document.getElementById(‘nj_v’).value=a.vehicle||’’;document.getElementById(‘nj_p’).value=a.price||’’;document.getElementById(‘nj_a’).value=a.address||’’;openSheet(‘ovJob’);}
+function renderSchedule(){
+var el=document.getElementById(‘appt-list’);
+if(!D.appts.length){el.innerHTML=’<div class="empty"><span class="empty-ico">📅</span><div class="empty-t">No appointments</div><div class="empty-s">Tap + Book to schedule</div></div>’;return;}
+var sorted=D.appts.slice().sort(function(a,b){return new Date(a.date+‘T’+(a.time||‘00:00’))-new Date(b.date+‘T’+(b.time||‘00:00’));});
+var today=new Date().toISOString().split(‘T’)[0];
+var up=sorted.filter(function(a){return a.date>=today;}),past=sorted.filter(function(a){return a.date<today;});
+var html=’’;
+if(up.length){
+html+=’<div class="sec">Upcoming · ‘+up.length+’</div>’;
+html+=up.map(function(a){
+var isT=a.date===today,d=new Date(a.date+‘T12:00’);
+var dl=d.toLocaleDateString(‘en-US’,{weekday:‘long’,month:‘short’,day:‘numeric’});
+var tl=a.time?new Date(‘2000-01-01T’+a.time).toLocaleTimeString(‘en-US’,{hour:‘numeric’,minute:‘2-digit’}):’’;
+var sa=a.address?a.address.replace(/’/g,”\’”):’’;
+return’<div class="acard '+(isT?'today':'')+'"><div class="adate">’+(isT?‘TODAY’:’’+dl)+’</div><div class="atime">’+tl+’</div>’+(a.recurring?’<div class="rec-badge">’+a.recurring+’</div>’:’’)+’<div class="arow"><span class="aico">👤</span><div><div class="atxt">’+a.name+’</div><div style="font-size:11px;color:var(--t2)">’+a.phone+’</div></div></div><div class="arow"><span class="aico">🔧</span><div class="atxt">’+a.service+’</div></div>’+(a.vehicle?’<div class="arow"><span class="aico">🚘</span><div class="atxt">’+a.vehicle+’</div></div>’:’’)+(a.price?’<div class="arow"><span class="aico">💰</span><div class="atxt mono" style="color:var(--green)">$’+a.price.toFixed(2)+’</div></div>’:’’)+(a.address?’<div class="arow"><span class="aico">📍</span><div><div class="atxt">’+a.address+’</div><button class="maps-link" onclick="openMaps(\''+sa+'\')">Open in Maps</button></div></div>’:’’)+’<div class="btn-row" style="margin-top:12px"><button class="tag g" onclick="openSMS('+a.id+')">Message</button><button class="tag b" onclick="startFromAppt('+a.id+')">Start</button><button class="tag a" onclick="addToCalendar('+a.id+')">Calendar</button><button class="tag r" onclick="deleteAppt('+a.id+')">Remove</button></div></div>’;
+}).join(’’);
+}
+if(past.length){html+=’<div class="sec" style="color:var(--t3)">Past · ‘+past.length+’</div>’;html+=past.map(function(a){return’<div style="padding:9px 0;border-bottom:1px solid var(--s3);opacity:.4;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:13px">’+a.name+’</div><div style="font-size:12px;color:var(--t3)">’+a.service+’ · ‘+a.date+’</div></div><button class="tag r" style="padding:6px 10px" onclick="deleteAppt('+a.id+')">Remove</button></div>’;}).join(’’);}
+el.innerHTML=html;
+}
+
+/* HOME */
+function renderHome(){
+var today=new Date().toLocaleDateString(),done=D.jobs.filter(function(j){return j.status===‘complete’;});
+var tday=done.filter(function(j){return j.date===today;}),trev=tday.reduce(function(s,j){return s+j.price;},0);
+var mrev=done.reduce(function(s,j){return s+j.price;},0);
+var timed=done.filter(function(j){return j.duration;}),avg=timed.length?timed.reduce(function(s,j){return s+j.duration;},0)/timed.length:0;
+document.getElementById(‘s-today’).textContent=’$’+trev.toFixed(0);
+document.getElementById(‘s-todayj’).textContent=tday.length+’ job’+(tday.length!==1?‘s’:’’);
+document.getElementById(‘s-month’).textContent=’$’+mrev.toFixed(0);
+document.getElementById(‘s-monthj’).textContent=done.length+’ total’;
+document.getElementById(‘s-time’).textContent=fmt(Math.floor(avg)).slice(0,5);
+document.getElementById(‘s-cost’).textContent=’$’+calcProdCost().toFixed(2);
+var days=[‘M’,‘T’,‘W’,‘T’,‘F’,‘S’,‘S’],ti=new Date().getDay()===0?6:new Date().getDay()-1;
+var revs=days.map(function(_,i){return done.filter(function(j){var d=new Date(j.start);return(d.getDay()===0?6:d.getDay()-1)===i;}).reduce(function(s,j){return s+j.price;},0);});
+var mx=Math.max.apply(null,revs.concat([1]));
+document.getElementById(‘home-chart’).innerHTML=days.map(function(d,i){var on=i===ti;var bg=‘background:’+(on?‘var(–accent)’:‘var(–s4)’)+(on?’;box-shadow:0 0 8px rgba(91,141,239,.3)’:’’);return’<div class="ccol"><div class="cbar" style="height:'+Math.max(4,(revs[i]/mx)*100)+'%;'+bg+'"></div><div class="clbl" style="'+(on?'color:var(--accent)':'')+'">’+d+’</div></div>’;}).join(’’);
+var recent=D.jobs.slice(0,3);
+document.getElementById(‘home-recent’).innerHTML=!recent.length?’<div class="empty"><span class="empty-ico">🚗</span><div class="empty-t">No jobs yet</div><div class="empty-s">Tap + New Job to get started</div></div>’:recent.map(function(j){return’<div class="jcard"><div class="jcard-top"><div><div class="jname">’+j.customer+’</div><div class="jmeta">’+j.vehicle+’</div></div><div style="text-align:right"><div class="jprice">$’+j.price.toFixed(0)+’</div><span class="badge bd-'+(j.status==='complete'?'g':'a')+'">’+j.status+’</span></div></div><div style="font-size:12px;color:var(--t2)">’+j.service+’</div></div>’;}).join(’’);
+var low=D.products.filter(function(p){return p.stock<=1;});
+document.getElementById(‘home-stock’).innerHTML=!low.length?’<div class="card" style="color:var(--t2);font-size:13px;padding:11px 14px">All products well stocked</div>’:low.map(function(p){return’<div class="card" style="border-left:3px solid var(--amber);padding:11px 14px;margin-bottom:7px"><div style="color:var(--amber);font-size:13px;font-weight:600">’+p.name+’ — ‘+p.stock+’ left</div><div style="font-size:11px;color:var(--t2);margin-top:3px">Time to restock</div></div>’;}).join(’’);
+if(activeJob){document.getElementById(‘abanner’).style.display=‘flex’;document.getElementById(‘bn-name’).textContent=activeJob.customer;document.getElementById(‘bn-svc’).textContent=activeJob.service;}
+}
+
+/* PRODUCTS */
+var CATALOG=[
+{n:“Gold Class Car Wash”,b:“Meguiar’s”,p:14.99,s:64,j:2,c:“Shampoo”,d:“Rich foam, coating-safe”},
+{n:“M205 Ultra Finishing”,b:“Meguiar’s”,p:29.99,s:16,j:1,c:“Polish”,d:“Mirror finish polish”},
+{n:“Ultimate Liquid Wax”,b:“Meguiar’s”,p:22.99,s:16,j:1,c:“Wax”,d:“Synthetic polymer protection”},
+{n:“Endure Tire Dressing”,b:“Meguiar’s”,p:12.99,s:15,j:1,c:“Tires”,d:“Satin long-lasting finish”},
+{n:“Mr. Pink Super Suds”,b:“Chemical Guys”,p:17.99,s:16,j:1.5,c:“Shampoo”,d:“pH neutral foam”},
+{n:“VSS Scratch Remover”,b:“Chemical Guys”,p:22.99,s:16,j:1,c:“Polish”,d:“Removes swirls & scratches”},
+{n:“Butter Wet Wax”,b:“Chemical Guys”,p:19.99,s:16,j:1,c:“Wax”,d:“Deep glossy shine”},
+{n:“InnerClean Detailer”,b:“Chemical Guys”,p:14.99,s:16,j:2,c:“Interior”,d:“All interior surfaces”},
+{n:“Leather Cleaner”,b:“Chemical Guys”,p:17.99,s:16,j:1.5,c:“Interior”,d:“Deep leather cleaning”},
+{n:“VRP Tire Dressing”,b:“Chemical Guys”,p:14.99,s:16,j:1,c:“Tires”,d:“Long-lasting gloss”},
+{n:“Streak Free Glass”,b:“Chemical Guys”,p:12.99,s:16,j:2,c:“Glass”,d:“Crystal clear finish”},
+{n:“Microfiber Towels 12pk”,b:“Chemical Guys”,p:24.99,s:1,j:0,c:“Tools”,d:“Ultra-soft towels”},
+{n:“Gentle Snow Foam”,b:“Koch Chemie”,p:22.99,s:34,j:2,c:“Shampoo”,d:“pH neutral coating-safe”},
+{n:“Heavy Cut H9.02”,b:“Koch Chemie”,p:25.99,s:16,j:1,c:“Polish”,d:“Deep scratch removal”},
+{n:“Fine Cut F6.01”,b:“Koch Chemie”,p:27.99,s:16,j:1,c:“Polish”,d:“Swirl-free finish”},
+{n:“Protector Wax PW”,b:“Koch Chemie”,p:36.99,s:16,j:0.5,c:“Wax”,d:“High-gloss sealant”},
+{n:“Green Star APC”,b:“Koch Chemie”,p:18.99,s:34,j:2,c:“Interior”,d:“All-purpose cleaner”},
+{n:“Magic Wheel Cleaner”,b:“Koch Chemie”,p:24.99,s:34,j:2,c:“Tires”,d:“Acid-free rim cleaner”},
+{n:“GLW Ceramic Wash”,b:“3D Car Care”,p:19.99,s:16,j:2,c:“Shampoo”,d:“SiO2 infused shampoo”},
+{n:“Speed All-In-One”,b:“3D Car Care”,p:24.99,s:16,j:1,c:“Polish”,d:“Clean, polish & protect”},
+{n:“GLW Ceramic Wax”,b:“3D Car Care”,p:24.99,s:16,j:0.5,c:“Wax”,d:“Hydrophobic spray”},
+{n:“APC+ Cleaner”,b:“3D Car Care”,p:16.99,s:16,j:2,c:“Interior”,d:“Concentrated citrus APC”},
+{n:“GLW Tire Dressing”,b:“3D Car Care”,p:17.99,s:16,j:1,c:“Tires”,d:“Satin to gloss finish”},
+{n:“GLW Ceramic Glass”,b:“3D Car Care”,p:18.99,s:16,j:2,c:“Glass”,d:“Ceramic rain repellent”}
+];
+var CATS=[‘All’,‘Shampoo’,‘Polish’,‘Wax’,‘Interior’,‘Tires’,‘Glass’,‘Tools’],activeCat=‘All’;
+function renderCatalog(){document.getElementById(‘cat-pills’).innerHTML=CATS.map(function(c){return’<div class="ppill '+(c===activeCat?'on':'')+'" onclick="setCat(\''+c+'\')">’+c+’</div>’;}).join(’’);var f=CATALOG.filter(function(p){return activeCat===‘All’||p.c===activeCat;});document.getElementById(‘cat-grid’).innerHTML=f.map(function(p){return’<div class="pcard"><div class="pbrand">’+p.b+’</div><div class="pname">’+p.n+’</div><div class="pdesc">’+p.d+’</div><div class="pfoot"><span class="pprice-lbl">$’+p.p.toFixed(2)+’</span><button class="padd" onclick="addFromCatalogIdx('+CATALOG.indexOf(p)+')">Add</button></div></div>’;}).join(’’);}
+function setCat(c){activeCat=c;renderCatalog();}
+function addFromCatalogIdx(idx){var p=CATALOG[idx];if(!p)return;if(D.products.find(function(x){return x.name===p.n;})){notify(‘Already in inventory’,‘err’);return;}D.products.push({id:Date.now(),name:p.n,brand:p.b,cost:p.p,size:String(p.s),stock:1,perJob:p.j,category:p.c});save();renderInv();notify(p.n+’ added!’);}
+function saveProduct(){var name=document.getElementById(‘ap_n’).value.trim();if(!name){notify(‘Enter product name’,‘err’);return;}D.products.push({id:Date.now(),name:name,brand:’’,cost:parseFloat(document.getElementById(‘ap_c’).value)||0,size:document.getElementById(‘ap_s’).value||‘1’,stock:parseFloat(document.getElementById(‘ap_q’).value)||0,perJob:parseFloat(document.getElementById(‘ap_j’).value)||0,category:document.getElementById(‘ap_cat’).value});save();closeSheet(‘ovProd’);renderInv();notify(‘Added!’);[‘ap_n’,‘ap_c’,‘ap_s’,‘ap_q’,‘ap_j’].forEach(function(id){var el=document.getElementById(id);if(el)el.value=’’;}); }
+function removeProd(id){D.products=D.products.filter(function(p){return p.id!==id;});save();renderInv();}
+function renderInv(){
+document.getElementById(‘inv-count’).textContent=D.products.length;
+var el=document.getElementById(‘inv-list’);
+if(!D.products.length){el.innerHTML=’<div style="color:var(--t2);font-size:13px;text-align:center;padding:11px">Browse catalog above or tap + Add</div>’;return;}
+el.innerHTML=D.products.map(function(p){var cpu=((p.cost/(parseFloat(p.size)||1))*(p.perJob||0)).toFixed(2);var pct=Math.min(100,(p.stock/5)*100);return’<div class="iitem"><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px">’+p.name+’</div><div style="font-size:11px;color:var(--t2)">’+p.category+’ · ‘+p.perJob+‘oz/job · $’+cpu+’/use</div><div class="pbar"><div class="pbfill" style="width:'+pct+'%;background:'+(pct>60?'var(--green)':pct>30?'var(--amber)':'var(--red)')+'"></div></div><div style="font-size:10px;color:var(--t3);margin-top:3px;font-weight:600">Stock: ‘+p.stock+’</div></div><div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:8px"><span class="mono" style="font-size:12px;color:var(--green)">$’+p.cost.toFixed(2)+’</span><button class="tag r" style="padding:5px 8px;font-size:11px" onclick="removeProd('+p.id+')">Remove</button></div></div>’;}).join(’’);
+var total=D.products.reduce(function(s,p){return s+(p.cost/(parseFloat(p.size)||1))*(p.perJob||0);},0);
+document.getElementById(‘cost-break’).innerHTML=’<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:4px"><span class="mono" style="font-size:26px;color:var(--red)">$’+total.toFixed(2)+’</span><span style="font-size:12px;color:var(--t2)">per detail</span></div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Based on oz/job settings</div>’+D.products.map(function(p){var c=((p.cost/(parseFloat(p.size)||1))*(p.perJob||0)).toFixed(2);return’<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--s3)"><span style="font-size:12px">’+p.name+’</span><span class="mono" style="font-size:11px;color:var(--t2)">$’+c+’</span></div>’;}).join(’’);
+}
+
+/* EARNINGS */
+function renderEarnings(){
+var done=D.jobs.filter(function(j){return j.status===‘complete’;});
+var rev=done.reduce(function(s,j){return s+j.price;},0),cost=done.reduce(function(s,j){return s+(j.prodCost||0);},0);
+document.getElementById(‘e-rev’).textContent=’$’+rev.toFixed(2);
+document.getElementById(‘e-cost’).textContent=’$’+cost.toFixed(2);
+document.getElementById(‘e-profit’).textContent=’$’+(rev-cost).toFixed(2);
+document.getElementById(‘e-jobs’).textContent=done.length;
+document.getElementById(‘earn-log’).innerHTML=!done.length?’<div class="empty"><span class="empty-ico">💰</span><div class="empty-t">No earnings yet</div><div class="empty-s">Complete jobs to track profit</div></div>’:done.map(function(j){return’<div class="jcard"><div class="jcard-top"><div><div class="jname">’+j.customer+’</div><div class="jmeta">’+j.date+’ · ‘+j.service+’</div></div><div style="text-align:right"><div class="mono" style="font-size:14px;color:var(--accent)">$’+(j.price-(j.prodCost||0)).toFixed(2)+’</div><div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:2px">Profit</div></div></div><div style="display:flex;gap:12px;font-size:12px;color:var(--t2);margin-bottom:8px"><span>Rev: <span style="color:var(--green)">$’+j.price.toFixed(2)+’</span></span><span>Cost: <span style="color:var(--red)">$’+(j.prodCost||0).toFixed(2)+’</span></span>’+(j.duration?’<span>’+fmt(j.duration)+’</span>’:’’)+’</div><button class="tag b" style="font-size:11px" onclick="showInvoice('+j.id+')">Invoice</button></div>’;}).join(’’);
+}
+
+/* STORE */
+var SVCS=[{n:‘Exterior Detail’,p:60},{n:‘Interior Detail’,p:70},{n:‘Full Detail’,p:100},{n:‘Paint Correction’,p:350},{n:‘Ceramic Coating’,p:600},{n:‘Engine Bay’,p:80}];
+function saveStore(){D.store={name:document.getElementById(‘biz-n’).value,address:document.getElementById(‘biz-a’).value,phone:document.getElementById(‘biz-ph’).value,rate:parseFloat(document.getElementById(‘biz-r’).value)||75,venmo:document.getElementById(‘biz-venmo’).value,cashapp:document.getElementById(‘biz-cashapp’).value,zelle:document.getElementById(‘biz-zelle’).value,paypal:document.getElementById(‘biz-paypal’).value,stripe:document.getElementById(‘biz-stripe’).value};save();notify(‘Saved!’);}
+function renderStore(){var s=D.store;if(s.name)document.getElementById(‘biz-n’).value=s.name;if(s.address)document.getElementById(‘biz-a’).value=s.address;if(s.phone)document.getElementById(‘biz-ph’).value=s.phone;if(s.rate)document.getElementById(‘biz-r’).value=s.rate;if(s.venmo)document.getElementById(‘biz-venmo’).value=s.venmo;if(s.cashapp)document.getElementById(‘biz-cashapp’).value=s.cashapp;if(s.zelle)document.getElementById(‘biz-zelle’).value=s.zelle;if(s.paypal)document.getElementById(‘biz-paypal’).value=s.paypal;if(s.stripe)document.getElementById(‘biz-stripe’).value=s.stripe;document.getElementById(‘svc-menu’).innerHTML=SVCS.map(function(s){return’<div class="svc-row"><span style="font-size:13px;font-weight:600;color:#fff">’+s.n+’</span><span class="mono" style="font-size:12px;color:var(--green)">$’+s.p+’</span></div>’;}).join(’’);}
+
+/* QUOTE */
+var QSVCS=[{n:‘Exterior Detail’,p:60},{n:‘Interior Detail’,p:70},{n:‘Full Detail’,p:100},{n:‘Paint Correction’,p:350},{n:‘Ceramic Coating’,p:600},{n:‘Engine Bay’,p:80}];
+var QADDONS=[{n:‘SUV / Truck’,p:20},{n:‘Pet Hair Removal’,p:30},{n:‘Odor Treatment’,p:25},{n:‘Headlight Restore’,p:40},{n:‘Clay Bar’,p:30},{n:‘Engine Bay Add-on’,p:80}];
+var PAY_METHODS=[
+{id:‘stripe’,name:‘Card (Stripe)’,icon:‘💳’,prefix:null,key:‘stripe’,hint:‘Paste your Stripe link in Setup’},
+{id:‘venmo’,name:‘Venmo’,icon:‘💜’,prefix:‘venmo.com/u/’,key:‘venmo’,hint:’@yourhandle’},
+{id:‘cashapp’,name:‘CashApp’,icon:‘💚’,prefix:‘cash.app/’,key:‘cashapp’,hint:’$cashtag’},
+{id:‘zelle’,name:‘Zelle’,icon:‘🏦’,prefix:null,key:‘zelle’,hint:‘Phone or email’},
+{id:‘paypal’,name:‘PayPal’,icon:‘🔵’,prefix:‘paypal.me/’,key:‘paypal’,hint:‘paypal.me/you’},
+{id:‘cash’,name:‘Cash’,icon:‘💵’,prefix:null,key:null,hint:null},
+];
+function initQuote(){
+quoteItems=[];payMethod=‘stripe’;
+[‘q_c’,‘q_v’].forEach(function(id){document.getElementById(id).value=’’;});
+document.getElementById(‘q-sum’).style.display=‘none’;
+document.getElementById(‘q-svcs’).innerHTML=QSVCS.map(function(s,i){return’<div class="qsvc" id="qs'+i+'" onclick="toggleQ(\'s\','+i+',\''+s.n+'\','+s.p+')"><span style="font-size:13px;font-weight:600;color:#fff">’+s.n+’</span><span class="mono" style="font-size:12px;color:var(--green)">$’+s.p+’</span></div>’;}).join(’’);
+document.getElementById(‘q-addons’).innerHTML=QADDONS.map(function(s,i){return’<div class="qsvc" id="qa'+i+'" onclick="toggleQ(\'a\','+i+',\''+s.n+'\','+s.p+')"><span style="font-size:13px;font-weight:600;color:#fff">’+s.n+’</span><span class="mono" style="font-size:12px;color:var(--green)">+$’+s.p+’</span></div>’;}).join(’’);
+renderPayOpts();
+}
+function renderPayOpts(){
+document.getElementById(‘pay-opts-grid’).innerHTML=PAY_METHODS.map(function(m){
+var stored=m.key&&D.store[m.key]?D.store[m.key]:’’;
+var sub=m.id===‘stripe’?(stored?‘Link saved’:‘Add in Setup’):(stored||m.hint||’’);
+return’<button class="pay-opt '+(payMethod===m.id?'sel':'')+'" onclick="selectPay(\''+m.id+'\')" id="popt-'+m.id+'"><span class="pay-opt-ico">’+m.icon+’</span><div class="pay-opt-name">’+m.name+’</div><div class="pay-opt-sub">’+sub+’</div></button>’;
+}).join(’’);
+updatePayHandle();
+}
+function selectPay(id){payMethod=id;document.querySelectorAll(’.pay-opt’).forEach(function(b){b.classList.remove(‘sel’);});var el=document.getElementById(‘popt-’+id);if(el)el.classList.add(‘sel’);updatePayHandle();}
+function updatePayHandle(){
+var m=PAY_METHODS.find(function(x){return x.id===payMethod;}),wrap=document.getElementById(‘pay-handle-wrap’);
+if(!m||m.id===‘cash’||m.id===‘stripe’){wrap.style.display=‘none’;return;}
+var stored=m.key&&D.store[m.key]?D.store[m.key]:’’;
+document.getElementById(‘pay-handle-lbl’).textContent=m.name+’  –  ‘+m.hint;
+document.getElementById(‘pay-handle’).placeholder=m.hint;
+document.getElementById(‘pay-handle’).value=stored;
+wrap.style.display=‘block’;
+}
+function buildPayLink(method,handle){
+var m=PAY_METHODS.find(function(x){return x.id===method;});if(!m)return null;
+if(method===‘stripe’)return D.store.stripe||null;
+if(!m.prefix||!handle)return null;
+return’https://’+m.prefix+handle.replace(/^[@$]/,’’);
+}
+function toggleQ(type,idx,name,price){
+var key=type+idx,el=document.getElementById((type===‘s’?‘qs’:‘qa’)+idx);
+var ei=quoteItems.findIndex(function(q){return q.key===key;});
+if(ei>-1){quoteItems.splice(ei,1);el.classList.remove(‘on’);}else{quoteItems.push({key:key,name:name,price:price});el.classList.add(‘on’);}
+if(!quoteItems.length){document.getElementById(‘q-sum’).style.display=‘none’;return;}
+document.getElementById(‘q-sum’).style.display=‘block’;
+var total=quoteItems.reduce(function(s,i){return s+i.price;},0);
+document.getElementById(‘q-items’).innerHTML=quoteItems.map(function(i){return’<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--s3)"><span style="font-size:12px;font-weight:600;color:#fff">’+i.name+’</span><span class="mono" style="font-size:12px;color:var(--green)">$’+i.price+’</span></div>’;}).join(’’);
+document.getElementById(‘q-total’).textContent=’$’+total;
+renderPayOpts();
+}
+function sendQuote(){
+var cust=document.getElementById(‘q_c’).value.trim()||‘there’;
+var veh=document.getElementById(‘q_v’).value.trim();
+var biz=D.store.name||‘DetailPro’;
+var total=quoteItems.reduce(function(s,i){return s+i.price;},0);
+var lines=quoteItems.map(function(i){return’- ‘+i.name+’: $’+i.price;}).join(’\n’);
+var handle=(document.getElementById(‘pay-handle’).value||’’).trim();
+var m=PAY_METHODS.find(function(x){return x.id===payMethod;});
+var payLink=buildPayLink(payMethod,handle);
+var paySection=’’;
+if(payMethod===‘cash’){paySection=’\n\nPayment: Cash at time of service’;}
+else if(payMethod===‘stripe’&&payLink){paySection=’\n\nPay by card (Visa/MC/Amex):\n’+payLink+’\nSecure checkout  –  just tap the link!’;}
+else if(payLink){paySection=’\n\n’+m.name+’:\n’+payLink+(total?’?amount=’+total:’’);}
+else if(handle&&m){paySection=’\n\nPay via ‘+m.name+’: ‘+handle;}
+var msg=‘Hi ‘+cust+’! Here is your detailing quote from ‘+biz+’.\n\n’+(veh?‘Vehicle: ‘+veh+’\n\n’:’’)+lines+’\n\nTotal: $’+total+paySection+’\n\nReply to book. Thanks!’;
+cpCopy(msg,function(){if(m&&m.key&&handle){D.store[m.key]=handle;save();}notify(‘Quote copied! Open iMessage and paste.’);closeSheet(‘ovQuote’);});
+}
+
+/* TEMPLATES */
+var TMPLS=[
+{ico:‘✅’,name:‘Booking Confirmation’,color:‘var(–green)’,msg:function(b){return’Hi! This is ‘+b+’. Your detailing appointment is confirmed. We will be there at the scheduled time. Reach out if anything changes!’;}},
+{ico:‘⏰’,name:‘Day Before Reminder’,color:‘var(–amber)’,msg:function(b){return’Hey! Quick reminder from ‘+b+’  –  your detail is tomorrow. Please make sure your car is accessible. See you then!’;}},
+{ico:‘🚗’,name:‘On My Way’,color:‘var(–accent)’,msg:function(b){return’Hi! This is ‘+b+’  –  heading to your location now. Be there shortly!’;}},
+{ico:‘🎉’,name:‘Job Complete’,color:‘var(–purple)’,msg:function(b){return’Hi! Your car is all done. Thanks for choosing ‘+b+’  –  hope you love the results!’;}},
+{ico:‘⭐’,name:‘Review Request’,color:‘var(–amber)’,msg:function(b){return’Hi! Great detailing your car. If you are happy, a quick Google review would really help us out. Thanks!  –  ‘+b;}},
+{ico:‘💰’,name:‘Referral Offer’,color:‘var(–green)’,msg:function(b){return’Hey! If you know anyone who needs a detail, send them our way  –  we offer a referral discount. Thanks!  –  ‘+b;}},
+{ico:‘📅’,name:‘Rebook Reminder’,color:‘var(–accent)’,msg:function(b){return’Hi! It has been a while  –  your car is probably due for another detail. Reply anytime to schedule!  –  ‘+b;}},
+{ico:‘🌧️’,name:‘Weather Reschedule’,color:‘var(–red)’,msg:function(b){return’Hey! Sorry  –  need to reschedule due to weather. I will reach out soon to find another time. Apologies!  –  ‘+b;}},
+];
+function buildTmpls(){var biz=D.store.name||‘DetailPro’;document.getElementById(‘tmpls-body’).innerHTML=TMPLS.map(function(t,i){return’<div class="tmpl"><div class="tmpl-name"><span>’+t.ico+’</span><span style="color:'+t.color+'">’+t.name+’</span></div><div class="tmpl-text">’+t.msg(biz)+’</div><div class="tmpl-btns"><button class="tag b" onclick="copyTmpl('+i+')">Copy</button><button class="tag g" onclick="openTmplMsg('+i+')">Open in Messages</button></div></div>’;}).join(’’);}
+function copyTmpl(i){cpCopy(TMPLS[i].msg(D.store.name||‘DetailPro’),function(){notify(‘Copied!’);});}
+function openTmplMsg(i){cpCopy(TMPLS[i].msg(D.store.name||‘DetailPro’),function(){notify(‘Copied  –  opening Messages…’);setTimeout(function(){window.location.href=‘sms:’;},500);});}
+
+/* TIPS */
+var TIPS_DATA=[
+{cat:‘Pricing & Business’,tips:[
+{q:‘What should I charge for a full detail?’,a:‘A standard full detail runs $150-$250 for a sedan, $200-$350 for an SUV or truck. Add $25-50 for SUVs, $40-75 for large trucks. Factor in product cost (~$15-25/job), time (3-5 hrs), and target $60-80/hr for your labor.’},
+{q:‘How do I price paint correction?’,a:‘Single-stage (light swirls): $250-450. Two-stage (heavy defects): $400-800. Three-stage (severe damage): $600-1200+. Always inspect in bright light and photograph before starting. Charge by defect severity, not just car size.’},
+{q:‘How do I get more clients fast?’,a:‘Post before/after photos on Instagram and TikTok daily. Ask every happy client for a Google review. Offer a $20 referral discount. Partner with local dealerships. Put signage on your vehicle. Google reviews are the single highest-ROI action you can take.’},
+{q:‘How do I upsell ceramic coating?’,a:‘After every detail say: “Your car looks great  –  would you like it to stay this clean for 2+ years? A ceramic coating protects the paint and makes washing take 10 minutes.” Price $400-800 for consumer-grade coatings. It is your best-margin service.’},
+]},
+{cat:‘Washing & Decon’,tips:[
+{q:‘What is the two-bucket wash method?’,a:‘Use two buckets  –  one with soapy water, one with clean rinse water. After each panel, rinse your mitt in the clean bucket before reloading soap. This prevents dirt from scratching the paint. Add grit guards for even better results.’},
+{q:‘How do I remove water spots?’,a:‘Fresh spots: diluted white vinegar (50/50) or a dedicated water spot remover wiped on and off. Older etched spots need a light polish like M205 or Koch Chemie Fine Cut. Very severe etching requires multi-stage correction. Work in shade and use distilled water for final rinse.’},
+{q:‘What is clay bar and when should I use it?’,a:‘Clay bar removes bonded contaminants  –  tree sap, rail dust, overspray  –  that washing cannot remove. If a clean panel feels rough like sandpaper, clay it. Always use with clay lubricant spray, before polishing, never after. Takes 20-45 minutes per car.’},
+{q:‘How do I remove iron fallout?’,a:‘Spray an iron remover (Koch Chemie Iron Cut or CarPro IronX) on the panel. Wait 3-5 minutes  –  it turns purple as it reacts with iron particles. Rinse off thoroughly. Always use before clay bar. Essential for dark vehicles that sit outdoors.’},
+]},
+{cat:‘Paint Correction’,tips:[
+{q:‘What equipment do I need for paint correction?’,a:‘A dual-action (DA) polisher is essential  –  Rupes LHR15, Griots G9, or Flex 3401. You need cutting pads, finishing pads, and microfiber pads. Use M105 or Koch Chemie H9 for cutting, M205 or Koch Chemie F6 for finishing. Good lighting is non-negotiable  –  invest in a swirl-finding light.’},
+{q:‘How do I remove swirl marks?’,a:‘Wash and clay the car first. Work in 2x2 ft sections with a cutting compound on a cutting pad at speed 5-6. Keep the pad flat and overlapping. Wipe off residue, inspect under your detail light. Follow with a finishing polish on a soft pad. Seal with wax or ceramic.’},
+{q:‘How do I safely remove scratches?’,a:‘Light scratches you cannot feel with your fingernail: one or two-stage polish removes them. Medium scratches that catch your fingernail: compound plus polish. Deep scratches that show primer or metal: need touch-up paint first, then polish. Always test a small area first.’},
+]},
+{cat:‘Interior Detailing’,tips:[
+{q:‘How do I remove pet hair from seats and carpet?’,a:‘Best methods: rubber bristle brush dragged across fabric, pumice stone on carpet, or damp rubber gloves run across surfaces to ball up hair. After extracting, vacuum thoroughly. Charge $25-50 extra for heavy pet hair jobs.’},
+{q:‘How do I remove bad odors?’,a:‘Identify and remove the source first. Clean all fabric and carpet with enzyme cleaner. Sprinkle baking soda on carpet overnight then vacuum. Use an ozone machine for 30-60 minutes with the car empty. For smoke: clean every surface including the headliner, vents, and sun visors.’},
+{q:‘How do I clean leather without damaging it?’,a:‘Use a pH-neutral leather cleaner like Chemical Guys Leather Cleaner or Lexol. Apply with a soft brush, work in circles, wipe with a microfiber. Follow with a leather conditioner like Leather Honey or 303 Aerospace to prevent cracking. Never use all-purpose cleaner on leather.’},
+{q:‘How do I get stains out of carpet?’,a:‘Act fast  –  fresh stains are much easier. Blot, never rub. Use citrus-based APC diluted 4:1 for most stains. For protein stains like blood or food use enzyme cleaner. For ink use isopropyl alcohol on a cotton swab. An extractor like the Bissell Little Green makes a huge difference on deep stains.’},
+]},
+{cat:‘Protection & Coatings’,tips:[
+{q:‘Wax vs sealant vs ceramic coating  –  what is the difference?’,a:‘Wax (carnauba) gives a warm gloss and 1-3 months protection  –  easy to apply. Polymer sealant lasts 4-6 months with better protection. Ceramic coating (SiO2) lasts 2-5+ years, is hydrophobic, and scratch-resistant. For clients wanting long-term protection, sell a coating  –  it is your best-margin service.’},
+{q:‘How do I apply a spray ceramic coating?’,a:‘After correction, wipe each panel with an IPA solution. Work in a cool shaded area. Apply 2-4 drops onto an applicator and spread thinly across one panel. Wait for the rainbow flash (30-60 seconds). Buff off with two microfibers  –  first to remove, second to level. Keep out of rain for 24 hours.’},
+]},
+{cat:‘Equipment & Setup’,tips:[
+{q:‘What is the essential starter kit?’,a:‘Minimum viable mobile kit for around $500-800: pressure washer, foam cannon, two buckets with grit guards, DA polisher, 20+ microfiber towels, wash mitts, extractor or wet/dry vac, all-purpose cleaner, shampoo, tire dressing, glass cleaner, interior detailer, compound, polish, and wax or sealant.’},
+{q:‘What pressure washer should I get?’,a:‘For mobile use a 1500-2000 PSI electric unit like Sun Joe or Ryobi  –  quiet and portable. For more power get a 2000-2800 PSI gas unit. You need at minimum 1.5 GPM flow. A foam cannon requires at least 1000 PSI. Always start with a 25 or 40 degree nozzle  –  never use the 0 degree nozzle on paint.’},
+{q:‘How do I set up efficiently on site?’,a:‘Park with room to walk all the way around the car. Work in shade  –  never in direct sun. Lay out products in the order you will use them. Do the exterior first: wash, decon, polish, protect. Then do the interior. Keep dirty tools and clean tools separated to avoid cross-contamination.’},
+]},
+];
+
+var allTips=[];
+TIPS_DATA.forEach(function(cat){cat.tips.forEach(function(t){allTips.push({cat:cat.cat,q:t.q,a:t.a});});});
+
+function renderTips(){
+var q=(document.getElementById(‘tips-search’)?document.getElementById(‘tips-search’).value:’’).toLowerCase().trim();
+var html=’’;
+if(q){
+var results=allTips.filter(function(t){return t.q.toLowerCase().indexOf(q)>-1||t.a.toLowerCase().indexOf(q)>-1;});
+if(!results.length){html=’<div class="empty"><span class="empty-ico">🔍</span><div class="empty-t">No tips found</div><div class="empty-s">Try a different search</div></div>’;}
+else{html=results.map(function(t,i){return tipCard(t.q,t.a,‘sr’+i);}).join(’’);}
+}else{
+TIPS_DATA.forEach(function(cat){
+html+=’<span class="tip-cat">’+cat.cat+’</span>’;
+html+=cat.tips.map(function(t,i){return tipCard(t.q,t.a,cat.cat.replace(/\s/g,’’)+i);}).join(’’);
+});
+}
+document.getElementById(‘tips-list’).innerHTML=html;
+}
+function tipCard(q,a,id){return’<div class="tip-card" id="tc-'+id+'"><div class="tip-q" onclick="toggleTip(\'tc-'+id+'\')">’+q+’<span class="tip-chevron">▾</span></div><div class="tip-a">’+a+’</div></div>’;}
+function toggleTip(id){var el=document.getElementById(id);if(el)el.classList.toggle(‘open’);}
+function filterTips(){renderTips();}
+</script>
+
+</body>
+</html>
